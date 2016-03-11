@@ -4,8 +4,8 @@
 A small C# library for interacting with Outlook and Excel using the Microsoft Interop libraries. 
 
 **Dependencies**  
-Microsoft.Office.Interop.Excel version 15 (Available via nuGet and [online](https://www.microsoft.com/en-us/download/details.aspx?id=3508))  
-Microsoft.Office.Interop.Outlook version 15 (Available via nuGet and [online](https://www.microsoft.com/en-us/download/details.aspx?id=3508))  
+Microsoft.Office.Interop.Excel version 15 (Available via NuGet and [online](https://www.microsoft.com/en-us/download/details.aspx?id=3508))  
+Microsoft.Office.Interop.Outlook version 15 (Available via NuGet and [online](https://www.microsoft.com/en-us/download/details.aspx?id=3508))  
 
 **Getting Started**  
 Download the DLL and XML from [releases](https://github.com/DStewart1997/MSController/releases), put the two files in your \bin\debug\ folder (Along with Microsoft.Office.Interop.Excel.dll and Microsoft.Office.Interop.Outlook.dll), add references to the DLLs and you're good to go.

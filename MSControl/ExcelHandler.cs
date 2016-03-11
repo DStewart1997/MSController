@@ -19,6 +19,16 @@ namespace MSController
         static Excel.Range range = null;
         object missing = System.Reflection.Missing.Value;
 
+        /// <summary>
+        /// Opens an excel spreadsheet for processing. If it does not exist it will be created.
+        /// </summary>
+        /// <param name="filePath">The filepath string of the spreadsheet to be opened.</param>
+        /// <param name="sheet">The worksheet to open. If it does not exist it will be created.</param>
+        public ExcelHandler(string filePath, string sheet = "default")
+        {
+            open(filePath, sheet);
+        }
+
 
         // Open, close, create, isOpen
         /// <summary>

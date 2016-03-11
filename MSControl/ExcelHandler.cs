@@ -11,12 +11,12 @@ namespace MSController
     /// </summary>
     public class ExcelHandler
     {
-        static Excel.Application excelApp;
-        static Excel.Workbooks workbooks;
-        static Excel.Workbook workbook;
-        static Excel.Sheets worksheets;
-        static Excel.Worksheet worksheet;
-        static Excel.Range range;
+        static Excel.Application excelApp = null;
+        static Excel.Workbooks workbooks = null;
+        static Excel.Workbook workbook = null;
+        static Excel.Sheets worksheets = null;
+        static Excel.Worksheet worksheet = null;
+        static Excel.Range range = null;
         object missing = System.Reflection.Missing.Value;
 
 
@@ -94,13 +94,27 @@ namespace MSController
             workbook.Close(0);
             excelApp.Quit();
 
+            releaseCOMObjects();
+        }
+
+        /// <summary>
+        /// Releases all used COM objects, useful for when try, catch, finally blocks to ensure all COM objects are released.
+        /// </summary>
+        public void releaseCOMObjects()
+        {
             // Release the COM objects
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheet);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheets);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(workbooks);
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+            if (range != null)
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+            if (worksheet != null)
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheet);
+            if (worksheets != null)
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheets);
+            if (workbook != null)
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+            if (workbooks != null)
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(workbooks);
+            if (excelApp != null)
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
 
             // The internet said do this and it works so it's here
             GC.Collect();

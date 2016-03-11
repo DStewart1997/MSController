@@ -9,6 +9,22 @@ namespace MSController
     /// </summary>
     public class OutlookHandler
     {
+        Outlook.Application app = null;
+        Outlook.MAPIFolder root = null;
+        Outlook.MailItem mailItem = null;
+
+        /// <summary>
+        /// Constructor for creating initial COM objects.
+        /// </summary>
+        public OutlookHandler()
+        {
+            app = new Outlook.Application();
+            root = app.Session.DefaultStore.GetRootFolder();
+            mailItem = app.CreateItem(Outlook.OlItemType.olMailItem) as Outlook.MailItem;
+        }
+
+        // sendMail
+        #region
         /// <summary>
         /// Sends an email using Outlook.
         /// </summary>
@@ -20,7 +36,6 @@ namespace MSController
         {
             sendMail(subject, body, new List<string>() { recipient }, new List<string>(), importance);
         }
-
         /// <summary>
         /// Sends an email using Outlook.
         /// </summary>
@@ -32,7 +47,6 @@ namespace MSController
         {
             sendMail(subject, body, recipients, new List<string>(), importance);
         }
-
         /// <summary>
         /// Sends an email using Outlook.
         /// </summary>
@@ -45,7 +59,6 @@ namespace MSController
         {
             sendMail(subject, body, new List<string>() { recipeint }, new List<string>() { attachmentPath }, importance);
         }
-
         /// <summary>
         /// Sends an email using Outlook.
         /// </summary>
@@ -58,7 +71,6 @@ namespace MSController
         {
             sendMail(subject, body, recipients, new List<string>() { attachmentPath }, importance);
         }
-
         /// <summary>
         /// Sends an email using Outlook.
         /// </summary>
@@ -84,8 +96,6 @@ namespace MSController
         {
             try
             {
-                Outlook.Application app = new Outlook.Application();
-                Outlook.MailItem mailItem = (Outlook.MailItem)app.CreateItem(Outlook.OlItemType.olMailItem);
                 mailItem.Subject = subject;
                 mailItem.Body = body;
                 mailItem.To = string.Join("; ", recipients.ToArray());
@@ -114,7 +124,46 @@ namespace MSController
             {
                 throw ex;
             }
+            finally
+            {
+                releaseCOMObjects();
+            }
 
+        }
+        #endregion
+
+        /// <summary>
+        /// Returns all folders from current session (Including subfolders).
+        /// </summary>
+        /// <param name="root"></param>
+        public void getFolders(Outlook.MAPIFolder root = null)
+        {
+            if (root == null)
+                root = this.root;
+
+            foreach (Outlook.MAPIFolder folder in root.Folders)
+            {
+                Console.WriteLine(folder.Name);
+                getFolders(folder);
+            }
+        }
+
+
+        /// <summary>
+        /// Releases all used COM objects, useful for when try, catch, finally blocks to ensure all COM objects are released.
+        /// </summary>
+        public void releaseCOMObjects()
+        {
+            if (app != null)
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(app);
+            if (mailItem != null)
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(mailItem);
+
+            // The internet said do this and it works so it's here
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 }

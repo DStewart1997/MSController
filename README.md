@@ -1,4 +1,6 @@
 # MSController
+
+[![Join the chat at https://gitter.im/DStewart1997/MSController](https://badges.gitter.im/DStewart1997/MSController.svg)](https://gitter.im/DStewart1997/MSController?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A small C# library for interacting with Outlook and Excel using the Microsoft.Interop libraries.  
 Download the DLL and XML from [releases](https://github.com/DStewart1997/MSController/releases), put the two files in your \bin\debug\ folder (Along with Microsoft.Office.Interop.Excel.dll and Microsoft.Office.Interop.Outlook.dll), add a reference to the dll and you're good to go.
 

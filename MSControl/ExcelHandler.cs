@@ -26,7 +26,7 @@ namespace MSController
         /// <param name="sheet">The worksheet to open. If it does not exist it will be created.</param>
         public ExcelHandler(string filePath, string sheet = "default")
         {
-            open(filePath, sheet);
+            Open(filePath, sheet);
         }
 
 
@@ -36,10 +36,10 @@ namespace MSController
         /// </summary>
         /// <param name="filePath">The filepath string of the spreadsheet to be opened.</param>
         /// <param name="sheet">The worksheet to open. If it does not exist it will be created.</param>
-        public void open(string filePath, string sheet = "defualt")
+        public void Open(string filePath, string sheet = "default")
         {
             if (!File.Exists(filePath))
-                create(filePath);  // Create the file if it doesn't exist
+                Create(filePath);  // Create the file if it doesn't exist
 
             excelApp = new Excel.Application();
 
@@ -51,7 +51,7 @@ namespace MSController
             workbook = workbooks.Open(filePath, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing);
             worksheets = workbook.Worksheets;
 
-            if (sheet.Equals("defualt"))
+            if (sheet.Equals("default"))
             {
                 worksheet = (Excel.Worksheet)workbook.ActiveSheet;
             }
@@ -63,7 +63,7 @@ namespace MSController
                 }
                 catch (System.Runtime.InteropServices.COMException)
                 {
-                    addSheet(sheet);  // Add sheet if it doesn't exist
+                    AddSheet(sheet);  // Add sheet if it doesn't exist
                 }
             }
 
@@ -74,7 +74,7 @@ namespace MSController
         /// Creates an excel spreadsheet.
         /// </summary>
         /// <param name="filePath">The filepath string of the spreadsheet to be created.</param>
-        public void create(string filePath)
+        public void Create(string filePath)
         {
             excelApp = new Excel.Application();
 
@@ -89,14 +89,14 @@ namespace MSController
             range = worksheet.Range["A" + 1];
             workbook.SaveAs(filePath);
 
-            close();
+            Close();
         }
 
         /// <summary>
         /// Closes the excel spreadsheet.
         /// </summary>
         /// <param name="save">Boolean value of whether or not to save the file.</param>
-        public void close(bool save = false)
+        public void Close(bool save = false)
         {
             if (save == true)
                 workbook.Save();
@@ -104,13 +104,13 @@ namespace MSController
             workbook.Close(0);
             excelApp.Quit();
 
-            releaseCOMObjects();
+            ReleaseCOMObjects();
         }
 
         /// <summary>
         /// Releases all used COM objects, useful for when try, catch, finally blocks to ensure all COM objects are released.
         /// </summary>
-        public void releaseCOMObjects()
+        public void ReleaseCOMObjects()
         {
             // Release the COM objects
             if (range != null)
@@ -140,7 +140,7 @@ namespace MSController
         /// <returns>
         /// True if the file is open, false if not.
         /// </returns>
-        public bool isOpen(string filePath)
+        public bool IsOpen(string filePath)
         {
             // TODO
             return false;
@@ -152,7 +152,7 @@ namespace MSController
         /// Adds a new sheet to the currently open spreadsheet and switches to it.
         /// </summary>
         /// <param name="sheet">The worksheet to create.</param>
-        public void addSheet(string sheet)
+        public void AddSheet(string sheet)
         {
             worksheet = (Excel.Worksheet)worksheets.Add(worksheets[1], Type.Missing, Type.Missing, Type.Missing);
             worksheet.Name = sheet;
@@ -163,7 +163,7 @@ namespace MSController
         /// </summary>
         /// <param name="newSheet">The new name of the worksheet.</param>
         /// <param name="oldSheet">The worksheet to rename.</param>
-        public void renameSheet(string newSheet, string oldSheet = "default")
+        public void RenameSheet(string newSheet, string oldSheet = "default")
         {
             if (!oldSheet.Equals("default"))
             {
@@ -185,7 +185,7 @@ namespace MSController
         /// Switches from the current worksheet to the specified one.
         /// </summary>
         /// <param name="sheet">The worksheet to switch to. If it is not found it will instead switch to the default.</param>
-        public void changeSheet(string sheet)
+        public void ChangeSheet(string sheet)
         {
             try
             {
@@ -207,7 +207,7 @@ namespace MSController
         /// <returns>
         /// The value from the specified cell.
         /// </returns>
-        public string getCell(string column, int row)
+        public string GetCell(string column, int row)
         {
             range = worksheet.Range[column + row];
             string cellValue = range.Value.ToString();
@@ -222,7 +222,7 @@ namespace MSController
         /// <returns>
         /// The value from the last cell in the specified column.
         /// </returns>
-        public string getLastCellInColumn(string column)
+        public string GetLastCellInColumn(string column)
         {
             int counter = 1;
             range = worksheet.Range[column + counter];
@@ -243,7 +243,7 @@ namespace MSController
         /// </summary>
         /// <param name="column">The column to search.</param>
         /// <returns></returns>
-        public List<string> getAllInColumn(string column)
+        public List<string> GetAllInColumn(string column)
         {
             List<string> columnData = new List<string>();
             int counter = 1;
@@ -268,9 +268,9 @@ namespace MSController
         /// <returns>
         /// The value from the last cell in the specified row.
         /// </returns>
-        public string getLastCellInRow(int row)
+        public string GetLastCellInRow(int row)
         {
-            List<string> columns = getColumnList();
+            List<string> columns = GetColumnList();
 
             int counter = 0;
             range = worksheet.Range[columns[counter] + row];
@@ -291,9 +291,9 @@ namespace MSController
         /// </summary>
         /// <param name="row">The row to search.</param>
         /// <returns></returns>
-        public List<string> getAllInRow(int row)
+        public List<string> GetAllInRow(int row)
         {
-            List<string> columns = getColumnList();
+            List<string> columns = GetColumnList();
             List<string> rowData = new List<string>();
 
             int counter = 0;
@@ -320,7 +320,7 @@ namespace MSController
         /// <param name="row">Int value of the row of the cell.</param>
         /// <param name="data">The value to write to the cell.</param>
         /// <param name="numberFormat">Whether the data should be formatted as a number (Prevents scientific notation being used).</param>
-        public void writeCell(string column, int row, string data, bool numberFormat = false)
+        public void WriteCell(string column, int row, string data, bool numberFormat = false)
         {
             range = worksheet.Range[column + row.ToString()];
             range.Value = data;
@@ -334,7 +334,7 @@ namespace MSController
         /// <param name="column">String value of the column of the cell.</param>
         /// <param name="data">The value to write to the cell.</param>
         /// <param name="numberFormat">Whether the data should be formatted as a number (Prevents scientific notation being used).</param>
-        public void writeLastCellInColumn(string column, string data, bool numberFormat = false)
+        public void WriteLastCellInColumn(string column, string data, bool numberFormat = false)
         {
             int counter = 1;
             range = worksheet.Range[column + counter];
@@ -356,7 +356,7 @@ namespace MSController
         /// Deletes the specified row from the spreadsheet.
         /// </summary>
         /// <param name="row">The row to delete.</param>
-        public void deleteRow(int row)
+        public void DeleteRow(int row)
         {
             // TODO
         }
@@ -365,7 +365,7 @@ namespace MSController
         /// Deletes the specified column from the spreadsheet.
         /// </summary>
         /// <param name="column">The column to delete.</param>
-        public void deleteColumn(string column)
+        public void DeleteColumn(string column)
         {
             // TODO
         }
@@ -374,7 +374,7 @@ namespace MSController
         /// Deletes the specified worksheet from the spreadsheet. If no sheet is specified the currently selected sheet is deleted.
         /// </summary>
         /// <param name="sheet">The sheet to delete.</param>
-        public void deleteSheet(string sheet = "default")
+        public void DeleteSheet(string sheet = "default")
         {
             if (sheet.Equals("default"))
                 worksheet = (Excel.Worksheet)workbook.ActiveSheet;
@@ -386,7 +386,7 @@ namespace MSController
 
 
         // Misc
-        private List<string> getColumnList()
+        private List<string> GetColumnList()
         {
             // Create a list for the columns from A-ZZZ
             List<string> columns = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".Select(x => x.ToString()).ToList();  // A-Z

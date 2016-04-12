@@ -32,9 +32,9 @@ namespace MSController
         /// <param name="body">Body text of the email.</param>
         /// <param name="recipient">Single recipient of the email</param>
         /// <param name="importance">The importance level of the email. Can be low (0), normal (1) or high (2).</param>
-        public void sendMail(string subject, string body, string recipient, int importance=1)
+        public void SendMail(string subject, string body, string recipient, int importance=1)
         {
-            sendMail(subject, body, new List<string>() { recipient }, new List<string>(), importance);
+            SendMail(subject, body, new List<string>() { recipient }, new List<string>(), importance);
         }
         /// <summary>
         /// Sends an email using Outlook.
@@ -43,9 +43,9 @@ namespace MSController
         /// <param name="body">Body text of the email.</param>
         /// <param name="recipients">List of recipients of the email.</param>
         /// <param name="importance">The importance level of the email. Can be low (0), normal (1) or high (2).</param>
-        public void sendMail(string subject, string body, List<string> recipients, int importance=1)
+        public void SendMail(string subject, string body, List<string> recipients, int importance=1)
         {
-            sendMail(subject, body, recipients, new List<string>(), importance);
+            SendMail(subject, body, recipients, new List<string>(), importance);
         }
         /// <summary>
         /// Sends an email using Outlook.
@@ -55,9 +55,9 @@ namespace MSController
         /// <param name="recipeint">Single recipient of the email.</param>
         /// <param name="attachmentPath">Single attachment path of the email.</param>
         /// <param name="importance">The importance level of the email. Can be low (0), normal (1) or high (2).</param>
-        public void sendMail(string subject, string body, string recipeint, string attachmentPath, int importance=1)
+        public void SendMail(string subject, string body, string recipeint, string attachmentPath, int importance=1)
         {
-            sendMail(subject, body, new List<string>() { recipeint }, new List<string>() { attachmentPath }, importance);
+            SendMail(subject, body, new List<string>() { recipeint }, new List<string>() { attachmentPath }, importance);
         }
         /// <summary>
         /// Sends an email using Outlook.
@@ -67,9 +67,9 @@ namespace MSController
         /// <param name="recipients">List of recipients of the email.</param>
         /// <param name="attachmentPath">Single attachment path of the email.</param>
         /// <param name="importance">The importance level of the email. Can be low (0), normal (1) or high (2).</param>
-        public void sendMail(string subject, string body, List<string> recipients, string attachmentPath, int importance=1)
+        public void SendMail(string subject, string body, List<string> recipients, string attachmentPath, int importance=1)
         {
-            sendMail(subject, body, recipients, new List<string>() { attachmentPath }, importance);
+            SendMail(subject, body, recipients, new List<string>() { attachmentPath }, importance);
         }
         /// <summary>
         /// Sends an email using Outlook.
@@ -79,9 +79,9 @@ namespace MSController
         /// <param name="recipient">Single recipient of the email.</param>
         /// <param name="attachmentPaths">List of attachment paths of the email.</param>
         /// <param name="importance">The importance level of the email. Can be low (0), normal (1) or high (2).</param>
-        public void sendMail(string subject, string body, string recipient, List<string> attachmentPaths, int importance=1)
+        public void SendMail(string subject, string body, string recipient, List<string> attachmentPaths, int importance=1)
         {
-            sendMail(subject, body, new List<string>() { recipient }, attachmentPaths, importance);
+            SendMail(subject, body, new List<string>() { recipient }, attachmentPaths, importance);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace MSController
         /// <param name="recipients">List of recipients of the email.</param>
         /// <param name="attachmentPaths">List of the attachment paths of the email.</param>
         /// <param name="importance">The importance level of the email. Can be low (0), normal (1) or high (2).</param>
-        public void sendMail(string subject, string body, List<string> recipients, List<string> attachmentPaths, int importance=1)
+        public void SendMail(string subject, string body, List<string> recipients, List<string> attachmentPaths, int importance=1)
         {
             try
             {
@@ -126,7 +126,7 @@ namespace MSController
             }
             finally
             {
-                releaseCOMObjects();
+                ReleaseCOMObjects();
             }
 
         }
@@ -136,7 +136,7 @@ namespace MSController
         /// Returns all folders from current session (Including subfolders).
         /// </summary>
         /// <param name="root"></param>
-        public void getFolders(Outlook.MAPIFolder root = null)
+        public void GetFolders(Outlook.MAPIFolder root = null)
         {
             if (root == null)
                 root = this.root;
@@ -144,7 +144,7 @@ namespace MSController
             foreach (Outlook.MAPIFolder folder in root.Folders)
             {
                 Console.WriteLine(folder.Name);
-                getFolders(folder);
+                GetFolders(folder);
             }
         }
 
@@ -152,7 +152,7 @@ namespace MSController
         /// <summary>
         /// Releases all used COM objects, useful for when try, catch, finally blocks to ensure all COM objects are released.
         /// </summary>
-        public void releaseCOMObjects()
+        public void ReleaseCOMObjects()
         {
             if (app != null)
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(app);

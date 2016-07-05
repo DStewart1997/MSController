@@ -108,17 +108,35 @@ namespace MSController
         {
             // Release the COM objects
             if (range != null)
+            {
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+                range = null;
+            }
             if (worksheet != null)
+            {
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheet);
+                worksheet = null;
+            }
             if (worksheets != null)
+            {
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheets);
+                worksheets = null;
+            }
             if (workbook != null)
+            {
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+                workbook = null;
+            }
             if (workbooks != null)
+            {
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(workbooks);
+                workbooks = null;
+            }
             if (excelApp != null)
+            {
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+                excelApp = null;
+            }
 
             // The internet said do this twice and it works so it's here
             GC.Collect();

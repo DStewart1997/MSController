@@ -46,7 +46,7 @@ namespace MSController
             workbook   = workbook   ?? workbooks.Open(filePath, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing);
             worksheets = worksheets ?? workbook.Worksheets;
 
-            if (sheet == "")
+            if (sheet == null)
             {
                 worksheet = (Excel.Worksheet)workbook.ActiveSheet;
             }
@@ -157,9 +157,9 @@ namespace MSController
         /// </summary>
         /// <param name="newSheet">The new name of the worksheet.</param>
         /// <param name="oldSheet">The worksheet to rename.</param>
-        public void RenameSheet(string newSheet, string oldSheet = "")
+        public void RenameSheet(string newSheet, string oldSheet = null)
         {
-            if (oldSheet != "")
+            if (oldSheet != null)
             {
                 try
                 {
@@ -374,9 +374,9 @@ namespace MSController
         /// Deletes the specified worksheet from the spreadsheet. If no sheet is specified the currently selected sheet is deleted.
         /// </summary>
         /// <param name="sheet">The sheet to delete.</param>
-        public void DeleteSheet(string sheet = "")
+        public void DeleteSheet(string sheet = null)
         {
-            if (sheet == "")
+            if (sheet == null)
                 worksheet = (Excel.Worksheet)workbook.ActiveSheet;
             else
             {

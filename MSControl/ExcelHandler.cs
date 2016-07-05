@@ -20,38 +20,33 @@ namespace MSController
         object missing = System.Reflection.Missing.Value;
 
         /// <summary>
-        /// Opens an excel spreadsheet for processing. If it does not exist it will be created.
+        /// Instantiates the class.
         /// </summary>
-        /// <param name="filePath">The filepath string of the spreadsheet to be opened.</param>
-        /// <param name="sheet">The worksheet to open. If it does not exist it will be created.</param>
-        public ExcelHandler(string filePath, string sheet = "default")
+        public ExcelHandler()
         {
-            Open(filePath, sheet);
         }
 
-
-        // Open, close, create, isOpen
+        // Open, Close, Create, IsOpen
         /// <summary>
-        /// Opens an excel spreadsheet for processing. If it does not exist it will be created.
+        /// Opens an excel spreadsheet for processing.  If it does not exist an exception will be thrown.
         /// </summary>
         /// <param name="filePath">The filepath string of the spreadsheet to be opened.</param>
-        /// <param name="sheet">The worksheet to open. If it does not exist it will be created.</param>
-        public void Open(string filePath, string sheet = "default")
+        /// <param name="sheet">The worksheet to open. If it does not exist an exception is thrown.</param>
+        public void Open(string filePath, string sheet = null)
         {
             if (!File.Exists(filePath))
-                Create(filePath);  // Create the file if it doesn't exist
+                throw new FileNotFoundException("The specified file: " + filePath + ", cannot be found."); 
 
-            excelApp = new Excel.Application();
-
+            excelApp = excelApp ?? new Excel.Application();
             if (excelApp == null)
                 throw new Exception("Excel could not be started. Ensure it is correctly installed on the machine.");
 
             excelApp.Visible = false;
-            workbooks = excelApp.Workbooks;
-            workbook = workbooks.Open(filePath, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing);
-            worksheets = workbook.Worksheets;
+            workbooks  = workbooks  ?? excelApp.Workbooks;
+            workbook   = workbook   ?? workbooks.Open(filePath, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing);
+            worksheets = worksheets ?? workbook.Worksheets;
 
-            if (sheet.Equals("default"))
+            if (sheet == "")
             {
                 worksheet = (Excel.Worksheet)workbook.ActiveSheet;
             }
@@ -63,7 +58,7 @@ namespace MSController
                 }
                 catch (System.Runtime.InteropServices.COMException)
                 {
-                    AddSheet(sheet);  // Add sheet if it doesn't exist
+                    throw new ArgumentException("The specified worksheet: " + sheet + ", cannot be found.");
                 }
             }
 
@@ -76,17 +71,16 @@ namespace MSController
         /// <param name="filePath">The filepath string of the spreadsheet to be created.</param>
         public void Create(string filePath)
         {
-            excelApp = new Excel.Application();
-
+            excelApp = excelApp ?? new Excel.Application();
             if (excelApp == null)
                 throw new Exception("Excel could not be started. Ensure it is correctly installed on the machine.");
 
             excelApp.Visible = false;
-            workbooks = excelApp.Workbooks;
-            workbook = workbooks.Add(missing);
-            worksheets = workbook.Worksheets;
-            worksheet = (Excel.Worksheet)workbook.ActiveSheet;
-            range = worksheet.Range["A" + 1];
+            workbooks  = workbooks  ?? excelApp.Workbooks;
+            workbook   = workbook   ?? workbooks.Add(missing);
+            worksheets = worksheets ?? workbook.Worksheets;
+            worksheet  = worksheet  ?? (Excel.Worksheet)workbook.ActiveSheet;
+            range      = range      ?? worksheet.Range["A" + 1];
             workbook.SaveAs(filePath);
 
             Close();
@@ -98,7 +92,7 @@ namespace MSController
         /// <param name="save">Boolean value of whether or not to save the file.</param>
         public void Close(bool save = false)
         {
-            if (save == true)
+            if (save)
                 workbook.Save();
 
             workbook.Close(0);
@@ -126,7 +120,7 @@ namespace MSController
             if (excelApp != null)
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
 
-            // The internet said do this and it works so it's here
+            // The internet said do this twice and it works so it's here
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
@@ -143,7 +137,7 @@ namespace MSController
         public bool IsOpen(string filePath)
         {
             // TODO
-            return false;
+            throw new NotImplementedException();
         }
 
 
@@ -163,9 +157,9 @@ namespace MSController
         /// </summary>
         /// <param name="newSheet">The new name of the worksheet.</param>
         /// <param name="oldSheet">The worksheet to rename.</param>
-        public void RenameSheet(string newSheet, string oldSheet = "default")
+        public void RenameSheet(string newSheet, string oldSheet = "")
         {
-            if (!oldSheet.Equals("default"))
+            if (oldSheet != "")
             {
                 try
                 {
@@ -173,9 +167,13 @@ namespace MSController
                 }
                 catch (System.Runtime.InteropServices.COMException)
                 {
-                    throw new ArgumentException("The specified worksheet was not found.");
+                    throw new ArgumentException("The specified worksheet: " + oldSheet + ", was not found.");
                 }
 
+            }
+            else
+            {
+                worksheet = (Excel.Worksheet)workbook.ActiveSheet;
             }
 
             worksheet.Name = newSheet;
@@ -359,6 +357,7 @@ namespace MSController
         public void DeleteRow(int row)
         {
             // TODO
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -368,18 +367,28 @@ namespace MSController
         public void DeleteColumn(string column)
         {
             // TODO
+            throw new NotImplementedException();
         }
 
         /// <summary>
         /// Deletes the specified worksheet from the spreadsheet. If no sheet is specified the currently selected sheet is deleted.
         /// </summary>
         /// <param name="sheet">The sheet to delete.</param>
-        public void DeleteSheet(string sheet = "default")
+        public void DeleteSheet(string sheet = "")
         {
-            if (sheet.Equals("default"))
+            if (sheet == "")
                 worksheet = (Excel.Worksheet)workbook.ActiveSheet;
             else
-                worksheet = (Excel.Worksheet)worksheets.get_Item(sheet);
+            {
+                try
+                {
+                    worksheet = (Excel.Worksheet)worksheets.get_Item(sheet);
+                }
+                catch (System.Runtime.InteropServices.COMException)
+                {
+                    throw new ArgumentException("The specified worksheet: " + sheet + ", was not found.");
+                }
+            }
 
             worksheet.Delete();
         }

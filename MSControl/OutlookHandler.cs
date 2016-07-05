@@ -23,7 +23,7 @@ namespace MSController
             mailItem = app.CreateItem(Outlook.OlItemType.olMailItem) as Outlook.MailItem;
         }
 
-        // sendMail
+        // SendMail
         #region
         /// <summary>
         /// Sends an email using Outlook.

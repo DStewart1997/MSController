@@ -12,10 +12,10 @@ namespace MSController
     public class ExcelHandler
     {
         static Excel.Application excelApp = null;
-        static Excel.Workbooks workbooks = null;
-        static Excel.Workbook workbook = null;
-        static Excel.Sheets worksheets = null;
-        static Excel.Worksheet worksheet = null;
+        static Excel.Workbooks workbooks  = null;
+        static Excel.Workbook workbook    = null;
+        static Excel.Sheets worksheets    = null;
+        static Excel.Worksheet worksheet  = null;
         object missing = System.Reflection.Missing.Value;
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace MSController
         public void Open(string filePath, string sheet = null)
         {
             if (!File.Exists(filePath))
-                throw new FileNotFoundException("The specified file: " + filePath + ", cannot be found."); 
+                throw new FileNotFoundException("The specified file: " + filePath + ", cannot be found.");
 
             excelApp = excelApp ?? new Excel.Application();
             if (excelApp == null)
@@ -213,7 +213,7 @@ namespace MSController
             var sheets = new List<string>();
             foreach (Excel.Worksheet sheet in workbook.Sheets)
                 sheets.Add(sheet.Name);
-            
+
             return sheets;
         }
 
@@ -269,7 +269,7 @@ namespace MSController
         /// <param name="column">The column to search.</param>
         /// <param name="includeBlanks">Whether to include blank spaces between first and last cells. Doesn't include trailing blank lines (ie. after last cell in column).</param>
         /// <returns>An enumerable list of each occupied cell in the specified column. Blanks are not included.</returns>
-        public IEnumerable<string> GetAllInColumn(string column, bool includeBlanks=false)
+        public IEnumerable<string> GetAllInColumn(string column, bool includeBlanks = false)
         {
             int lastRow = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing).Row;  // Last occupied row in entire spreadsheet
             IList<string> columnData = new List<string>();
@@ -287,7 +287,7 @@ namespace MSController
                     columnData.Add(lastCell);
                     hitValid = true;
                 }
-                else if(includeBlanks && hitValid)
+                else if (includeBlanks && hitValid)
                 {
                     columnData.Add("");
                 }
@@ -299,7 +299,7 @@ namespace MSController
             range = null;
             return columnData.Reverse();  // Reverse return data as we start from the bottom
         }
-        
+
         /// <summary>
         /// Gets the value from the last cell in a specified row in the open spreadsheet.
         /// </summary>
@@ -332,7 +332,7 @@ namespace MSController
         /// <param name="row">The row to search.</param>
         /// <param name="includeBlanks">Whether to include blank spaces between first and last cells. Doesn't include trailing blank lines (ie. after last cell in row).</param>
         /// <returns></returns>
-        public IEnumerable<string> GetAllInRow(int row, bool includeBlanks=false)
+        public IEnumerable<string> GetAllInRow(int row, bool includeBlanks = false)
         {
             int lastColumn = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing).Column - 1;  // Last occupied column in entire spreadsheet
             IEnumerable<string> columns = GetColumnList();
@@ -365,7 +365,7 @@ namespace MSController
         }
 
 
-        // Write
+        // Write - TODO fix blank line issue
         /// <summary>
         /// Writes a value to a specified cell in the open spreadsheet.
         /// </summary>
@@ -418,7 +418,7 @@ namespace MSController
         public void DeleteRow(int row)
         {
             // TODO
-            
+
             throw new NotImplementedException();
         }
 
@@ -426,10 +426,15 @@ namespace MSController
         /// Deletes the specified column from the spreadsheet.
         /// </summary>
         /// <param name="column">The column to delete.</param>
-        public void DeleteColumn(string column)
+        /// <param name="shift">Whether to shift the columns to the left or just leave them blank.</param>
+        public void DeleteColumn(string column, bool shift=true)
         {
-            Excel.Range range = worksheet.Range[column];
-            range.EntireColumn.Delete(missing);
+            Excel.Range range = worksheet.Range[column + 1];
+
+            if (shift)
+                range.EntireColumn.Delete(missing);
+            else
+                range.EntireColumn.Clear();
 
             System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
             range = null;

@@ -16,7 +16,6 @@ namespace MSController
         static Excel.Workbook workbook = null;
         static Excel.Sheets worksheets = null;
         static Excel.Worksheet worksheet = null;
-        static Excel.Range range = null;
         object missing = System.Reflection.Missing.Value;
 
         /// <summary>
@@ -61,8 +60,6 @@ namespace MSController
                     throw new ArgumentException("The specified worksheet: " + sheet + ", cannot be found.");
                 }
             }
-
-            range = worksheet.Range["A" + 1];
         }
 
         /// <summary>
@@ -80,7 +77,6 @@ namespace MSController
             workbook   = workbook   ?? workbooks.Add(missing);
             worksheets = worksheets ?? workbook.Worksheets;
             worksheet  = worksheet  ?? (Excel.Worksheet)workbook.ActiveSheet;
-            range      = range      ?? worksheet.Range["A" + 1];
             workbook.SaveAs(filePath);
 
             Close();
@@ -107,11 +103,6 @@ namespace MSController
         public void ReleaseCOMObjects()
         {
             // Release the COM objects
-            if (range != null)
-            {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                range = null;
-            }
             if (worksheet != null)
             {
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(worksheet);
@@ -213,6 +204,19 @@ namespace MSController
             }
         }
 
+        /// <summary>
+        /// Gets a list of the names of the sheets in the workbook.
+        /// </summary>
+        /// <returns>String list of worksheet names.</returns>
+        public IEnumerable<string> GetSheets()
+        {
+            var sheets = new List<string>();
+            foreach (Excel.Worksheet sheet in workbook.Sheets)
+                sheets.Add(sheet.Name);
+            
+            return sheets;
+        }
+
 
         // Read
         /// <summary>
@@ -225,9 +229,11 @@ namespace MSController
         /// </returns>
         public string GetCell(string column, int row)
         {
-            range = worksheet.Range[column + row];
+            Excel.Range range = worksheet.Range[column + row];
             string cellValue = range.Value.ToString();
 
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+            range = null;
             return cellValue;
         }
 
@@ -240,17 +246,20 @@ namespace MSController
         /// </returns>
         public string GetLastCellInColumn(string column)
         {
-            int counter = 1;
-            range = worksheet.Range[column + counter];
+            int lastRow = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing).Row;  // Last occupied row in entire spreadsheet
             string lastCell = "";
+            Excel.Range range = null;
 
-            while (range.Value != null)
+            // Go up through each row until a non null value is found, or we get to the top
+            while (range?.Value == null && lastRow > 0)
             {
-                lastCell = range.Value.ToString();
-                counter++;
-                range = worksheet.Range[column + counter];
+                range = worksheet.Range[column + lastRow];
+                lastRow--;
             }
 
+            lastCell = range.Value?.ToString();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+            range = null;
             return lastCell;
         }
 
@@ -258,25 +267,39 @@ namespace MSController
         /// Gets a list of each value in the specified column in the open spreadsheet.
         /// </summary>
         /// <param name="column">The column to search.</param>
-        /// <returns></returns>
-        public List<string> GetAllInColumn(string column)
+        /// <param name="includeBlanks">Whether to include blank spaces between first and last cells. Doesn't include trailing blank lines (ie. after last cell in column).</param>
+        /// <returns>An enumerable list of each occupied cell in the specified column. Blanks are not included.</returns>
+        public IEnumerable<string> GetAllInColumn(string column, bool includeBlanks=false)
         {
-            List<string> columnData = new List<string>();
-            int counter = 1;
-            range = worksheet.Range[column + counter];
+            int lastRow = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing).Row;  // Last occupied row in entire spreadsheet
+            IList<string> columnData = new List<string>();
             string lastCell = "";
+            Excel.Range range = null;
+            bool hitValid = false;
 
-            while (range.Value != null)
+            while (lastRow > 0)
             {
-                lastCell = range.Value.ToString();
-                counter++;
-                range = worksheet.Range[column + counter];
-                columnData.Add(lastCell);
+                range = worksheet.Range[column + lastRow];
+
+                if (range.Value != null)
+                {
+                    lastCell = range.Value.ToString();
+                    columnData.Add(lastCell);
+                    hitValid = true;
+                }
+                else if(includeBlanks && hitValid)
+                {
+                    columnData.Add("");
+                }
+
+                lastRow--;
             }
 
-            return columnData;
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+            range = null;
+            return columnData.Reverse();  // Reverse return data as we start from the bottom
         }
-
+        
         /// <summary>
         /// Gets the value from the last cell in a specified row in the open spreadsheet.
         /// </summary>
@@ -286,19 +309,20 @@ namespace MSController
         /// </returns>
         public string GetLastCellInRow(int row)
         {
-            List<string> columns = GetColumnList();
-
-            int counter = 0;
-            range = worksheet.Range[columns[counter] + row];
+            int lastColumn = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing).Column - 1;  // Last occupied column in entire spreadsheet
+            IEnumerable<string> columns = GetColumnList();
             string lastCell = "";
+            Excel.Range range = null;
 
-            while (range.Value != null)
+            while (range?.Value == null && lastColumn > 0)
             {
-                lastCell = range.Value.ToString();
-                counter++;
-                range = worksheet.Range[columns[counter] + row];
+                range = worksheet.Range[columns.ElementAt(lastColumn) + row];
+                lastColumn--;
             }
 
+            lastCell = range.Value?.ToString();
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+            range = null;
             return lastCell;
         }
 
@@ -306,25 +330,38 @@ namespace MSController
         /// Gets a list of each value in the specified row in the open spreadsheet.
         /// </summary>
         /// <param name="row">The row to search.</param>
+        /// <param name="includeBlanks">Whether to include blank spaces between first and last cells. Doesn't include trailing blank lines (ie. after last cell in row).</param>
         /// <returns></returns>
-        public List<string> GetAllInRow(int row)
+        public IEnumerable<string> GetAllInRow(int row, bool includeBlanks=false)
         {
-            List<string> columns = GetColumnList();
-            List<string> rowData = new List<string>();
-
-            int counter = 0;
-            range = worksheet.Range[columns[counter] + row];
+            int lastColumn = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell, Type.Missing).Column - 1;  // Last occupied column in entire spreadsheet
+            IEnumerable<string> columns = GetColumnList();
+            IList<string> rowData = new List<string>();
             string lastCell = "";
+            Excel.Range range = null;
+            bool hitValid = false;
 
-            while (range.Value != null)
+            while (lastColumn > 0)
             {
-                lastCell = range.Value.ToString();
-                counter++;
-                range = worksheet.Range[columns[counter] + row];
-                rowData.Add(lastCell);
+                range = worksheet.Range[columns.ElementAt(lastColumn) + row];
+
+                if (range.Value != null)
+                {
+                    lastCell = range.Value.ToString();
+                    rowData.Add(lastCell);
+                    hitValid = true;
+                }
+                else if (includeBlanks && hitValid)
+                {
+                    rowData.Add("");
+                }
+
+                lastColumn--;
             }
 
-            return rowData;
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+            range = null;
+            return rowData.Reverse();  // Reverse return data as we start from the bottom
         }
 
 
@@ -338,10 +375,13 @@ namespace MSController
         /// <param name="numberFormat">Whether the data should be formatted as a number (Prevents scientific notation being used).</param>
         public void WriteCell(string column, int row, string data, bool numberFormat = false)
         {
-            range = worksheet.Range[column + row.ToString()];
+            Excel.Range range = worksheet.Range[column + row.ToString()];
             range.Value = data;
             if (numberFormat)
                 range.NumberFormat = "#";
+
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+            range = null;
         }
 
         /// <summary>
@@ -353,7 +393,7 @@ namespace MSController
         public void WriteLastCellInColumn(string column, string data, bool numberFormat = false)
         {
             int counter = 1;
-            range = worksheet.Range[column + counter];
+            Excel.Range range = worksheet.Range[column + counter];
 
             while (range.Value != null)
             {
@@ -364,6 +404,9 @@ namespace MSController
             range.Value = data;
             if (numberFormat)
                 range.NumberFormat = "#";
+
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+            range = null;
         }
 
 
@@ -375,6 +418,7 @@ namespace MSController
         public void DeleteRow(int row)
         {
             // TODO
+            
             throw new NotImplementedException();
         }
 
@@ -384,8 +428,11 @@ namespace MSController
         /// <param name="column">The column to delete.</param>
         public void DeleteColumn(string column)
         {
-            // TODO
-            throw new NotImplementedException();
+            Excel.Range range = worksheet.Range[column];
+            range.EntireColumn.Delete(missing);
+
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+            range = null;
         }
 
         /// <summary>
@@ -413,10 +460,10 @@ namespace MSController
 
 
         // Misc
-        private List<string> GetColumnList()
+        private IEnumerable<string> GetColumnList()
         {
             // Create a list for the columns from A-ZZZ
-            List<string> columns = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".Select(x => x.ToString()).ToList();  // A-Z
+            IList<string> columns = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".Select(x => x.ToString()).ToList();  // A-Z
 
             for (int i = 0; i < 26; i++)
                 for (int j = 0; j < 26; j++)

@@ -66,19 +66,21 @@ namespace MSController
         /// Creates an excel spreadsheet.
         /// </summary>
         /// <param name="filePath">The filepath string of the spreadsheet to be created.</param>
-        public void Create(string filePath)
+        /// <param name="numberOfDefaultSheets">The number of default sheets to create the spreadsheet with.</param>
+        public void Create(string filePath, int numberOfDefaultSheets = 3)
         {
             excelApp = excelApp ?? new Excel.Application();
             if (excelApp == null)
                 throw new Exception("Excel could not be started. Ensure it is correctly installed on the machine.");
 
             excelApp.Visible = false;
+            excelApp.SheetsInNewWorkbook = numberOfDefaultSheets;
             workbooks  = workbooks  ?? excelApp.Workbooks;
             workbook   = workbook   ?? workbooks.Add(missing);
             worksheets = worksheets ?? workbook.Worksheets;
             worksheet  = worksheet  ?? (Excel.Worksheet)workbook.ActiveSheet;
-            workbook.SaveAs(filePath);
 
+            workbook.SaveAs(filePath);
             Close();
         }
 
